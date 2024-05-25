@@ -1,0 +1,63 @@
+tokenizer:
+  _component_: torchtune.models.llama3.llama3_tokenizer
+  path: /app/training/chargen-v3/tokenizer.model
+
+dataset:
+  _component_: torchtune.datasets.chat_dataset
+  conversation_style: sharegpt
+  chat_format: torchtune.data.ChatMLFormat
+  max_seq_len: 8192
+  train_on_input: False
+  source: json
+  data_files: /app/training/chargen-v3/chargen-v3.jsonl
+  split: train
+
+seed: null
+shuffle: True
+
+model:
+  _component_: torchtune.models.llama3.llama3_8b
+
+checkpointer:
+  _component_: torchtune.utils.FullModelHFCheckpointer
+  checkpoint_dir: /app/checkpoints/llama3
+  checkpoint_files: [
+    pytorch_model-00001-of-00004.bin,
+    pytorch_model-00002-of-00004.bin,
+    pytorch_model-00003-of-00004.bin,
+    pytorch_model-00004-of-00004.bin
+  ]
+  recipe_checkpoint: null
+  output_dir: ${output_dir}
+  model_type: LLAMA3
+resume_from_checkpoint: False
+
+batch_size: 2
+epochs: 1
+optimizer:
+  _component_: bitsandbytes.optim.PagedAdamW8bit
+  lr: 0.00001
+  weight_decay: 0.01
+
+lr_scheduler:
+  _component_: torchtune.modules.get_cosine_schedule_with_warmup
+  num_warmup_steps: 100
+
+loss:
+  _component_: torch.nn.CrossEntropyLoss
+
+max_steps_per_epoch: null
+gradient_accumulation_steps: 1
+optimizer_in_bwd: True
+compile: False
+
+device: cuda
+enable_activation_checkpointing: True
+dtype: bf16
+
+metric_logger:
+  _component_: torchtune.utils.metric_logging.WandBLogger
+  project: chargen-v3
+log_every_n_steps: 1
+
+output_dir: ./output
