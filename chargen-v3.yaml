@@ -1,6 +1,7 @@
 tokenizer:
-  _component_: torchtune.models.llama3.llama3_tokenizer
-  path: /app/training/chargen-v3/tokenizer.model
+  _component_: torchtune.modules.tokenizers.TransformersTokenizer
+  path: /app/training/chargen-v3/hf/
+  eot_token: "<|eot_id|>"
 
 dataset:
   _component_: torchtune.datasets.chat_dataset
